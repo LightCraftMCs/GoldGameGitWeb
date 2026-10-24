@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5c400"><title>ورود و ثبت‌نام | GoldGame</title>
+<link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/style.css">
+<style>
+.auth-wrap{min-height:72vh;display:grid;place-items:center;padding:48px 18px}
+.auth-card{width:min(100%,520px);padding:clamp(22px,5vw,38px);border:1px solid rgba(245,196,0,.35);border-radius:24px;background:rgba(15,15,15,.88);box-shadow:0 20px 80px #0008;backdrop-filter:blur(14px)}
+.auth-card h1{margin:0 0 8px;font-size:clamp(26px,5vw,38px)}.auth-card>p{color:#c6c6c6;line-height:1.9}
+.auth-tabs{display:flex;gap:10px;margin:22px 0}.auth-tabs button,.auth-submit{border:0;border-radius:12px;padding:13px 18px;font:inherit;font-weight:800;cursor:pointer}
+.auth-tabs button{flex:1;background:#292929;color:#fff}.auth-tabs button.active,.auth-submit{background:#f5c400;color:#171300}
+.auth-form label{display:block;margin:14px 0 7px;color:#eee}.auth-form input{box-sizing:border-box;width:100%;padding:14px;border:1px solid #555;border-radius:12px;background:#181818;color:#fff;font:inherit;outline-color:#f5c400}
+.auth-submit{width:100%;margin-top:18px}.auth-note{min-height:28px;margin-top:14px;line-height:1.8;color:#f5c400}.auth-small{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px}.auth-small button,.auth-small a{background:none;border:0;color:#f5c400;font:inherit;cursor:pointer;text-decoration:none}
+.auth-back{display:inline-block;margin-top:12px;color:#f5c400}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="shade"></div>
+<header class="topbar">
+<a class="brand" href="index.html"><img src="assets/logo.svg" alt="GoldGame"><span>GOLD<span class="gold">GAME</span></span></a>
+<button class="menu-btn" aria-label="باز کردن منو">☰</button>
+<nav><a href="index.html">خانه</a><a href="shop.html">فروشگاه</a><a href="rules.html">قوانین</a><a href="launcher.html">دانلود لانچر</a><a class="active" href="auth.html">ورود / ثبت‌نام</a></nav>
+<a class="nav-cta" href="shop.html">مشاهده فروشگاه <span>↗</span></a>
+</header>
+<main class="auth-wrap">
+<section class="auth-card">
+<span class="eyebrow"><i></i> حساب کاربری GoldGame</span>
+<h1 id="auth-title">ورود به حساب</h1>
+<p id="auth-description">برای مدیریت حساب کاربری، با ایمیل و رمز عبورت وارد شو.</p>
+<div class="auth-tabs"><button type="button" id="show-login" class="active">ورود</button><button type="button" id="show-signup">ثبت‌نام</button></div>
+<form id="auth-form" class="auth-form">
+<div id="name-row" class="hidden"><label for="display-name">نام نمایشی</label><input id="display-name" autocomplete="nickname" maxlength="40" placeholder="نام دلخواه"></div>
+<label for="email">ایمیل</label><input id="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
+<label for="password">رمز عبور</label><input id="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="حداقل ۸ کاراکتر">
+<button class="auth-submit" id="submit-button" type="submit">ورود</button>
+</form>
+<div class="auth-small"><button type="button" id="forgot-button">فراموشی رمز عبور</button><a href="index.html">بازگشت به خانه ←</a></div>
+<div id="auth-message" class="auth-note" role="status" aria-live="polite"></div>
+</section>
+</main>
+<footer><a class="brand footer-brand" href="index.html"><img src="assets/logo.svg" alt=""><span>GOLD<span class="gold">GAME</span></span></a><p>یک ماجراجویی تازه، یک جامعه تازه.</p><small>© GoldGame — تمام حقوق محفوظ است.</small></footer>
+<a class="support-fab" href="https://rubika.ir/GoldGameSupportBot" target="_blank" rel="noopener" aria-label="پشتیبانی روبیکا" title="پشتیبانی GoldGame"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 13h3v6H6a2 2 0 0 1-2-2v-4Zm16 0h-3v6h1a2 2 0 0 0 2-2v-4ZM9 20h6"/></svg></a>
+<script src="assets/supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+ const $=id=>document.getElementById(id);
+ const msg=$('auth-message'), form=$('auth-form');
+ let mode='login', client=null;
+ function message(t, bad=false){msg.textContent=t;msg.style.color=bad?'#ff8c78':'#f5c400'}
+ function ready(){
+   const url=window.GOLDGAME_SUPABASE_URL, key=window.GOLDGAME_SUPABASE_ANON_KEY;
+   if(!url||!key||url.includes('PASTE_YOUR')||key.includes('PASTE_YOUR')){
+     message('ابتدا فایل assets/supabase-config.js را با Project URL و کلید عمومی پروژه‌ات تکمیل کن.',true); return false;
+   }
+   if(!window.supabase){message('کتابخانه ورود بارگذاری نشد؛ اتصال اینترنت را بررسی کن.',true);return false}
+   if(!client) client=window.supabase.createClient(url,key);
+   return true;
+ }
+ function setMode(next){
+   mode=next; const signup=mode==='signup';
+   $('show-login').classList.toggle('active',!signup); $('show-signup').classList.toggle('active',signup);
+   $('name-row').classList.toggle('hidden',!signup);
+   $('auth-title').textContent=signup?'ساخت حساب GoldGame':'ورود به حساب';
+   $('auth-description').textContent=signup?'ایمیلت رو وارد کن و یک حساب بساز. ممکنه برای فعال‌سازی حساب، ایمیل تأیید دریافت کنی.':'برای مدیریت حساب کاربری، با ایمیل و رمز عبورت وارد شو.';
+   $('submit-button').textContent=signup?'ثبت‌نام':'ورود'; $('password').autocomplete=signup?'new-password':'current-password';
+   message('');
+ }
+ $('show-login').addEventListener('click',()=>setMode('login'));
+ $('show-signup').addEventListener('click',()=>setMode('signup'));
+ form.addEventListener('submit',async e=>{
+   e.preventDefault(); if(!ready())return;
+   const email=$('email').value.trim(), password=$('password').value, name=$('display-name').value.trim();
+   $('submit-button').disabled=true; message('در حال انجام درخواست…');
+   try{
+    if(mode==='signup'){
+      const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:name},emailRedirectTo:location.origin+location.pathname}});
+      if(error) throw error;
+      if(data.session){location.href='account.html'} else message('ثبت‌نام انجام شد. اگر تأیید ایمیل فعال است، صندوق ورودی ایمیلت را بررسی کن.');
+    } else {
+      const {error}=await client.auth.signInWithPassword({email,password}); if(error)throw error;
+      location.href='account.html';
+    }
+   }catch(err){message(err.message||'خطایی رخ داد. دوباره تلاش کن.',true)}
+   finally{$('submit-button').disabled=false}
+ });
+ $('forgot-button').addEventListener('click',async()=>{
+   if(!ready())return; const email=$('email').value.trim();
+   if(!email){message('اول ایمیلت رو در کادر ایمیل وارد کن.',true);$('email').focus();return}
+   message('در حال ارسال لینک بازیابی…');
+   try{const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname.replace(/auth\.html$/,'reset-password.html')});if(error)throw error;message('اگر این ایمیل در سیستم ثبت شده باشد، لینک بازیابی برایش ارسال می‌شود.')}
+   catch(err){message(err.message||'ارسال لینک بازیابی ناموفق بود.',true)}
+ });
+ setMode('login'); ready();
+})();
+</script>
+</body></html>
